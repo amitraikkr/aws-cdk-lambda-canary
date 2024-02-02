@@ -1,9 +1,11 @@
-from aws_cdk import (
-    # Duration,
-    Stack,
-    # aws_sqs as sqs,
-)
+from datetime import datetime
+from aws_cdk import Stack, RemovalPolicy
 from constructs import Construct
+from aws_cdk.aws_lambda import Function, Runtime, Code, Alias, VersionOptions
+from aws_cdk.aws_apigateway import LambdaRestApi, StageOptions
+from aws_cdk.aws_cloudwatch import Alarm, ComparisonOperator
+from aws_cdk.aws_codedeploy import LambdaDeploymentGroup, LambdaDeploymentConfig
+
 
 class AwsCdkLambdaCanaryStack(Stack):
 
@@ -12,8 +14,57 @@ class AwsCdkLambdaCanaryStack(Stack):
 
         # The code that defines your stack goes here
 
-        # example resource
-        # queue = sqs.Queue(
-        #     self, "AwsCdkLambdaCanaryQueue",
-        #     visibility_timeout=Duration.seconds(300),
-        # )
+        environment_type = self.node.try_get_context("environmentType")
+        context = self.node.try_get_context(environment_type)
+        self.alias_name = context["lambda"]["alias"]
+        self.stage_name = context["lambda"]["stage"]
+        current_date =  datetime.today().strftime('%d-%m-%Y')
+
+        my_lambda = Function(
+            scope = self,
+            id = "MyAppFunction",
+            function_name= context["lambda"]["name"],
+            handler = "handler.lambda_handler",
+            runtime = Runtime.PYTHON_3_11,
+            code = Code.from_asset("lambda"),
+            current_version_options = VersionOptions(
+                description = f'This Version deployed on {current_date}',
+                removal_policy = RemovalPolicy.RETAIN
+            )
+        )
+
+        new_version = my_lambda.current_version
+        new_version.apply_removal_policy(RemovalPolicy.RETAIN)
+
+        alias = Alias(
+            scope = self,
+            id = "FunctionAlias",
+            alias_name = self.alias_name,
+            version = new_version
+        )
+
+        LambdaRestApi(
+            scope = self,
+            id = "RestAPI",
+            handler = alias,
+            deploy_options = StageOptions(stage_name=self.stage_name)
+        )
+
+        failure_alarm = Alarm(
+            scope = self,
+            id = "FunctionFailureAlarm",
+            metric = alias.metric_errors(),
+            threshold = 1,
+            evaluation_periods = 1,
+            alarm_description = "The latest deployment errors > 0",
+            alarm_name = f'{self.stack_name}-canary-alarm',
+            comparison_operator = ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        )
+
+        LambdaDeploymentGroup(
+            scope = self,
+            id = "CanaryDeployment",
+            alias = alias,
+            deployment_config = LambdaDeploymentConfig.CANARY_10_PERCENT_5_MINUTES,
+            alarms = [failure_alarm]
+        )

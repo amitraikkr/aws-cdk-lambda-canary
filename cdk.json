@@ -57,6 +57,23 @@
     "@aws-cdk/aws-rds:auroraClusterChangeScopeOfInstanceParameterGroupWithEachParameters": true,
     "@aws-cdk/aws-appsync:useArnForSourceApiAssociationIdentifier": true,
     "@aws-cdk/aws-rds:preventRenderingDeprecatedCredentials": true,
-    "@aws-cdk/aws-codepipeline-actions:useNewDefaultBranchForCodeCommitSource": true
+    "@aws-cdk/aws-codepipeline-actions:useNewDefaultBranchForCodeCommitSource": true,
+    "prefix": "aws-cdk-lambda-canary-stack",
+    "test": {
+      "region": "us-east-2",
+      "lambda": {
+        "name": "aws-cdk-lambda-canary-function-test",
+        "alias": "live",
+        "stage": "test"
+      },
+      "tags": {
+        "App":"aws-cdk-lambda-canary",
+        "Environment": "TEST",
+        "IaC": "CDK"
+      }
+    },
+    "prod": {
+    }
+
   }
 }
