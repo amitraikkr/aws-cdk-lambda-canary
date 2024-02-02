@@ -1,58 +1,31 @@
+# AWS CDK Lambda Canary Deployment Stack
 
-# Welcome to your CDK Python project!
+This project demonstrates how to create a serverless application stack using AWS Cloud Development Kit (CDK) with a focus on implementing a canary deployment strategy for AWS Lambda functions. The stack includes a Lambda function, an API Gateway to expose the Lambda function, CloudWatch Alarms to monitor the function, and a CodeDeploy deployment group to manage the deployment process.
 
-This is a blank project for CDK development with Python.
+## Features
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+- **AWS Lambda**: A Lambda function is defined to handle backend logic. It uses Python 3.11 runtime and supports versioning and aliases.
+- **API Gateway**: A RESTful API is created as a front to the Lambda function, making it accessible via HTTP.
+- **CloudWatch Alarm**: Monitors the Lambda function for errors. If errors exceed a threshold, it triggers alarms.
+- **CodeDeploy Canary Deployment**: Deploys new versions of the Lambda function gradually to a subset of users before full deployment, using the canary deployment strategy.
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+## Project Structure
 
-To manually create a virtualenv on MacOS and Linux:
+- `lambda/`: This directory contains the Lambda function code. The handler defined in the function is `handler.lambda_handler`.
+- `lib/aws_cdk_lambda_canary_stack.py`: Defines the CDK stack, including the Lambda function, API Gateway, CloudWatch Alarm, and CodeDeploy deployment group.
 
-```
-$ python3 -m venv .venv
-```
+## Getting Started
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+### Prerequisites
 
-```
-$ source .venv/bin/activate
-```
+- AWS CLI: Configure your AWS credentials using the AWS CLI.
+- AWS CDK: Install the AWS CDK Toolkit globally via npm: `npm install -g aws-cdk`.
+- Python 3.x: Ensure Python 3.11 or later is installed along with `pip`.
 
-If you are a Windows platform, you would activate the virtualenv like this:
+### Setup
 
-```
-% .venv\Scripts\activate.bat
-```
+1. **Clone the repository**:
 
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
-$ pip install -r requirements.txt
-```
-
-At this point you can now synthesize the CloudFormation template for this code.
-
-```
-$ cdk synth
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
-
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+```bash
+git clone https://github.com/your-github-username/aws-cdk-lambda-canary.git
+cd aws-cdk-lambda-canary
